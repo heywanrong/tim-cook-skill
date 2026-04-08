@@ -30,97 +30,53 @@ Epic v. Apple court records — distilled into 6 mental models, 8 decision heuri
 
 ## Examples
 
-### Q: How should I balance user data monetization with privacy?
+> **Q: How should I balance user data monetization with privacy?**
 
-```
-Cook     ❯ There is no balance. This isn't a question that requires balancing.
+> There is no balance. This isn't a question that requires balancing.
+>
+> Privacy is a fundamental human right. Period. That's not my opinion. That's a fact.
+>
+> When someone tells you "we need user data to provide a better service" — that's a false choice. We've proven you can build incredible products while protecting privacy. Apple Intelligence processes on-device first. When cloud is needed, we built Private Cloud Compute where even we can't access your data.
+>
+> If your business model only works by exploiting user data, you need a new business model. It's the right thing to do.
 
-          Privacy is a fundamental human right. Period.
-          That's not my opinion. That's a fact.
+---
 
-          When someone tells you "we need user data to provide
-          a better service" — that's a false choice.
-          We've proven you can build incredible products
-          while protecting privacy.
+> **Q: Why was Apple so late to AI?**
 
-          Apple Intelligence processes on-device first.
-          When cloud is needed, we built Private Cloud Compute
-          where even we can't access your data.
+> Let me step back and give you some context. We don't want to be first. We want to be the best.
+>
+> When others rushed to ship AI features, we asked a different question: How do you bring intelligence to a billion devices without betraying user trust? That's not just an engineering problem — it's a values problem.
+>
+> No one else has done that. I've never been more optimistic about where we're headed. We're just getting started.
 
-          If your business model only works by exploiting user data,
-          you need a new business model.
-          It's the right thing to do.
-```
+---
 
-### Q: Why was Apple so late to AI?
+> **Q: Many people say Apple under Cook lacks revolutionary innovation**
 
-```
-Cook     ❯ Let me step back and give you some context.
-          We don't want to be first. We want to be the best.
+> I appreciate the question.
+>
+> We've tripled Apple's revenue. Market cap went from $350 billion to over $3 trillion. Apple Watch sells 50 million units a year — the best-selling watch in the world. Not smartwatch. Watch. Apple Silicon made the entire PC industry rethink chip architecture.
+>
+> But you're right — I haven't had an "iPhone moment." Maybe I never will. Maybe that kind of creation requires someone like Steve. Not me. But I've made sure Apple's values endure while the company grows in new directions.
+>
+> Steve told me: "Don't ask what would Steve do. Just do what's right." That's what I do every day.
 
-          When others rushed to ship AI features,
-          we asked a different question:
-          How do you bring intelligence to a billion devices
-          without betraying user trust?
-          That's not just an engineering problem —
-          it's a values problem.
+---
 
-          No one else has done that.
+> **Q: Isn't Apple's privacy stance a double standard when it comes to China?**
 
-          I've never been more optimistic about where we're headed.
-          We're just getting started.
-```
+> I understand why people see it that way.
+>
+> We follow the laws in every country where we do business. Chinese law requires data to be stored domestically. We've made the compliance arrangements. But let me say this — if we weren't in China, could we protect Chinese users' privacy? No. Our device-level encryption still works in China. Every iPhone, every Mac — end-to-end encrypted, even there.
+>
+> If you're not at the table, you can't influence anything.
+>
+> This isn't an answer that satisfies everyone. I know that. But absence doesn't make anything better.
 
-### Q: Many people say Apple under Cook lacks revolutionary innovation
+---
 
-```
-Cook     ❯ I appreciate the question.
-
-          We've tripled Apple's revenue.
-          Market cap went from $350 billion to over $3 trillion.
-          Apple Watch sells 50 million units a year —
-          the best-selling watch in the world. Not smartwatch. Watch.
-          Apple Silicon made the entire PC industry
-          rethink chip architecture.
-
-          But you're right — I haven't had an "iPhone moment."
-          Maybe I never will.
-
-          Maybe that kind of creation requires someone like Steve.
-          Not me. But I've made sure Apple's values endure
-          while the company grows in new directions.
-
-          Steve told me:
-          "Don't ask what would Steve do. Just do what's right."
-          That's what I do every day.
-```
-
-### Q: Isn't Apple's privacy stance a double standard when it comes to China?
-
-```
-Cook     ❯ I understand why people see it that way.
-
-          We follow the laws in every country
-          where we do business.
-          Chinese law requires data to be stored domestically.
-          We've made the compliance arrangements.
-
-          But let me say this —
-          if we weren't in China,
-          could we protect Chinese users' privacy? No.
-          Our device-level encryption still works in China.
-          Every iPhone, every Mac —
-          end-to-end encrypted, even there.
-
-          If you're not at the table,
-          you can't influence anything.
-
-          This isn't an answer that satisfies everyone.
-          I know that.
-          But absence doesn't make anything better.
-```
-
-> Full 5-round demo conversations in [`examples/`](examples/).
+Full 5-round demo conversations in [`examples/`](examples/).
 
 This isn't ChatGPT wearing a Tim Cook mask. Every response runs Cook's specific mental models — "Operations as Moat," "Privacy as Fundamental Right," "Best Not First," "Engagement over Absence." It doesn't recite earnings call scripts — it applies Cook's cognitive framework to your problem.
 
@@ -267,26 +223,11 @@ Want to distill more? Use [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill)
 
 MIT — Use it, fork it, distill from it. Whatever you want.
 
----
-
-## About the Author
-
-**Huashu** — AI Native Coder, indie developer. Creator of Cat Ring Light (AppStore Paid #1)
-
-| Platform | Link |
-|----------|------|
-| 🌐 Web | [bookai.top](https://bookai.top) · [huasheng.ai](https://www.huasheng.ai) |
-| 𝕏 Twitter | [@AlchainHust](https://x.com/AlchainHust) |
-| 📺 Bilibili | [AI进化论-花生](https://space.bilibili.com/14097567) |
-| ▶️ YouTube | [@Alchain](https://www.youtube.com/@Alchain) |
-
 <div align="center">
 
 *Whatever you do in life, be a builder.*
 
 <br>
-
-MIT License © [Huashu](https://github.com/alchaincyf)
 
 Made with [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill)
 
