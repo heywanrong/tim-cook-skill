@@ -2,7 +2,7 @@
 
 # Tim Cook.skill
 
-### The First Skill That Actually Speaks
+### The First Persona Skill That Actually Speaks
 
 > *"If you want to take credit, first learn to take responsibility."*
 
@@ -13,7 +13,7 @@
 
 <br>
 
-**Not a text impersonation. He actually speaks.**
+**Not a text role-play. He actually speaks.**
 
 Deep research across 30+ primary sources, distilled into Tim Cook's 6 mental models, 8 decision heuristics, and full expression DNA.<br>
 Then [VoxCPM2](https://github.com/OpenBMB/VoxCPM) voice cloning brings it to life — **Cook answers your questions in his own voice.**
@@ -34,27 +34,17 @@ Then [VoxCPM2](https://github.com/OpenBMB/VoxCPM) voice cloning brings it to lif
 
 > **Q: "Many people criticize Apple under your leadership for lacking disruptive innovation"**
 
-Other Skills give you text. This one lets Cook answer in person.
+Other persona Skills give you text. This one lets Cook answer in person —
 
-### Response 1: Press play
+### Response 1
 
-https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_innovation.mp4
-
-> I appreciate the question.
->
-> We've tripled Apple's revenue. Market cap went from $350 billion to over $3 trillion. Apple Watch sells 50 million units a year — the best-selling watch in the world. Not smartwatch. Watch. Apple Silicon made the entire PC industry rethink chip architecture. We completed a chip transition in two years — on schedule, exceeding expectations.
->
-> But you're right — I haven't had an "iPhone moment." Maybe I never will. Maybe that kind of creation requires someone like Steve. Not me. But I've made sure Apple's values endure while the company grows in new directions.
->
-> Steve told me: "Don't ask what would Steve do. Just do what's right." That's what I do every day.
-
----
+https://github.com/user-attachments/assets/7b85ccbc-4269-436d-af78-5da2ed2db908
 
 ### Response 2: Same question, different conversation
 
 The reasoning and wording differ each time — because this isn't a template, it's a thinking framework in action.
 
-https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_response2.mp4
+https://github.com/user-attachments/assets/ed251901-1e88-4740-947c-8bb60865eb7d
 
 ---
 

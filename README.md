@@ -2,7 +2,7 @@
 
 # 库克.skill
 
-### 全网第一个会说话的 Skill
+### 全网第一个会说话的人物 Skill
 
 > *"If you want to take credit, first learn to take responsibility."*
 
@@ -13,7 +13,7 @@
 
 <br>
 
-**不是文字模仿。是真的开口说话。**
+**不是文字角色扮演。他真的会开口说话。**
 
 基于 30+ 一手来源深度调研，提炼 Tim Cook 的 6 个核心心智模型、8 条决策启发式和完整表达DNA。<br>
 再通过 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 声音克隆——**库克亲口回答你的每一个问题。**
@@ -34,27 +34,17 @@
 
 > **问：「很多人批评你这个时代的苹果缺乏颠覆性的创新」**
 
-别人的 Skill 给你一段文字。这个 Skill 让库克亲自开口回答。
+别人的人物 Skill 给你一段文字。这个 Skill 让库克亲自开口回答——
 
-### 回答 1：点击播放
+### 回答 1
 
-https://github.com/heywanrong/tim-cook-skill/output/cook_tts_20260408_141622.mp4
-
-> 这个问题问得好。
->
-> 我把Apple的收入翻了3倍，市值从3500亿到超过3万亿。Apple Watch每年卖5000万只，是全球最畅销的手表。Apple Silicon让整个PC行业重新审视芯片架构。我们在两年内完成了一次芯片迁移——承诺的时间内，超出预期的质量。
->
-> 但你说得对——我没有做出一个"iPhone时刻"。也许永远不会。也许那个量级的创造需要的是Steve那样的人，不是我。但我确保了Apple的价值观不变，同时让公司在新的方向上成长。
->
-> Steve跟我说过："Don't ask what would Steve do. Just do what's right." 这是我每天在做的事。
-
----
+https://github.com/user-attachments/assets/7b85ccbc-4269-436d-af78-5da2ed2db908
 
 ### 回答 2：同一个问题，不同一次对话
 
 每次回答的思路和措辞都不同——因为这不是模板，是思维框架在运作。
 
-https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_response2.mp4
+https://github.com/user-attachments/assets/ed251901-1e88-4740-947c-8bb60865eb7d
 
 ---
 
