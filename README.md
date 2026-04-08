@@ -2,6 +2,8 @@
 
 # 库克.skill
 
+### 全网第一个会说话的 Skill
+
 > *"If you want to take credit, first learn to take responsibility."*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,10 +13,10 @@
 
 <br>
 
-**Tim Cook的认知操作系统，现在会说话了。**
+**不是文字模仿。是真的开口说话。**
 
-不是CEO话术模板，是可运行的思维框架——<br>
-基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 语音克隆，库克用他的声音亲自回答你的问题。
+基于 30+ 一手来源深度调研，提炼 Tim Cook 的 6 个核心心智模型、8 条决策启发式和完整表达DNA。<br>
+再通过 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 声音克隆——**库克亲口回答你的每一个问题。**
 
 <br>
 
@@ -22,23 +24,21 @@
 
 <br>
 
-基于 Leander Kahney 传记、Bloomberg Businessweek 出柜文章、Stanford/Duke/MIT 毕业演讲、<br>
-FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一手来源深度调研，<br>
-提炼 6 个核心心智模型、8 条决策启发式和完整的表达DNA。
-
-[听效果](#效果示例) · [安装](#安装) · [语音是怎么来的](#语音合成) · [蒸馏了什么](#蒸馏了什么) · [调研来源](#调研来源)
+[听他说话](#听库克说话) · [安装](#安装) · [怎么做到的](#语音合成) · [蒸馏了什么](#蒸馏了什么) · [调研来源](#调研来源)
 
 </div>
 
 ---
 
-## 效果示例
+## 听库克说话
 
-> **问：很多人批评你这个时代的苹果缺乏颠覆性的创新**
+> **问：「很多人批评你这个时代的苹果缺乏颠覆性的创新」**
 
-库克不只是打字回复你——他开口说话。
+别人的 Skill 给你一段文字。这个 Skill 让库克亲自开口回答。
 
-### 回答 1
+### 回答 1：点击播放
+
+<video src="output/cook_tts_20260408_innovation.mp4" controls width="100%"></video>
 
 > 这个问题问得好。
 >
@@ -48,15 +48,13 @@ FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一
 >
 > Steve跟我说过："Don't ask what would Steve do. Just do what's right." 这是我每天在做的事。
 
-🔊 **[点击收听库克的语音回答 →](output/cook_tts_20260408_innovation.wav)**
-
 ---
 
-### 回答 2
+### 回答 2：同一个问题，不同一次对话
 
-同一个问题，不同一次对话。每次回答的思路和措辞都不同——因为这不是模板，是思维框架在运作。
+每次回答的思路和措辞都不同——因为这不是模板，是思维框架在运作。
 
-🔊 **[点击收听第二次语音回答 →](output/cook_tts_20260408_141622.wav)**
+<video src="output/cook_tts_20260408_141622.mp4" controls width="100%"></video>
 
 ---
 
@@ -67,12 +65,12 @@ FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一
     ↓
 Claude Code 以 Tim Cook 的思维框架生成回答（文字）
     ↓
-VoxCPM2 用库克的参考音频克隆声音（语音合成）
+VoxCPM2 用库克真实音频克隆声音（语音合成）
     ↓
 终端自动播放 → 库克亲自跟你说话
 ```
 
-这不是ChatGPT套了个库克面具。每段回应都在运用Cook的具体心智模型——「运营即壁垒」「隐私即人权」「不做第一做最好」「参与优于缺席」。它不复读财报话术，它用Cook的认知框架分析你的问题，然后用他的声音说出来。
+这不是ChatGPT套了个库克面具。每段回应都在运用Cook的具体心智模型——「运营即壁垒」「隐私即人权」「不做第一做最好」「参与优于缺席」。它不复读财报话术，它用Cook的认知框架分析你的问题，然后**用他的声音说出来**。
 
 ---
 
@@ -99,7 +97,7 @@ npx skills add heywanrong/tim-cook-skill
 
 语音功能基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM)——OpenBMB 开源的 2B 参数语音合成模型，支持 30 种语言、48kHz 高质量音频输出。
 
-**原理**：VoxCPM2 的「可控声音克隆」功能，以一段 Tim Cook 的真实音频作为参考，将 Skill 生成的文字回答合成为库克风格的语音。
+**原理**：VoxCPM2 的「可控声音克隆」，以一段 Tim Cook 真实演讲音频作为参考，将 Skill 生成的文字回答合成为库克风格的语音。不是拼接，不是变声——是从零生成的克隆语音。
 
 **技术细节**：
 - 参考音频：`cook.wav`（Cook 公开演讲片段）
@@ -187,11 +185,11 @@ Leander Kahney《Tim Cook: The Genius Who Took Apple to the Next Level》· Trip
 
 ## 这个Skill是怎么造出来的
 
-由 [女娲.skill](https://github.com/alchaincyf/nuwa-skill) 自动生成。
+由 [女娲.skill](https://github.com/alchaincyf/nuwa-skill) 自动生成思维框架。语音能力由 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 提供。
 
-女娲的工作流程：输入一个名字 → 6个Agent并行调研（著作/对话/表达/批评/决策/时间线）→ 交叉验证提炼心智模型 → 构建SKILL.md → 质量验证（3个已知测试 + 1个边缘测试 + 风格测试）→ 双Agent精炼。
+女娲的工作流程：输入一个名字 → 6个Agent并行调研（著作/对话/表达/批评/决策/时间线）→ 交叉验证提炼心智模型 → 构建SKILL.md → 质量验证 → 双Agent精炼。
 
-语音能力由 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 提供，与 Skill 思维框架组合实现「能思考、会说话」的完整体验。
+VoxCPM2 负责最后一公里：把文字变成声音，让蒸馏出的人格真正「活」过来。
 
 想蒸馏其他人？安装女娲：
 
@@ -216,8 +214,8 @@ tim-cook-skill/
 │   ├── tts_generate.py                   # VoxCPM2 语音合成脚本
 │   └── check_env.sh                      # 环境检查
 ├── output/                               # 语音输出示例
-│   ├── cook_tts_20260408_innovation.wav  # 示例：回答"缺乏颠覆性创新"
-│   └── cook_tts_20260408_141622.wav      # 示例：同题不同回答
+│   ├── cook_tts_20260408_innovation.mp4  # 示例：回答"缺乏颠覆性创新"
+│   └── cook_tts_20260408_141622.mp4      # 示例：同题不同回答
 ├── references/
 │   └── research/                         # 6个调研文件（1561行）
 │       ├── 01-writings.md
