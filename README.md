@@ -38,7 +38,7 @@
 
 ### 回答 1：点击播放
 
-<video src="output/cook_tts_20260408_innovation.mp4" controls width="100%"></video>
+https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_innovation.mp4
 
 > 这个问题问得好。
 >
@@ -54,7 +54,7 @@
 
 每次回答的思路和措辞都不同——因为这不是模板，是思维框架在运作。
 
-<video src="output/cook_tts_20260408_141622.mp4" controls width="100%"></video>
+https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_response2.mp4
 
 ---
 

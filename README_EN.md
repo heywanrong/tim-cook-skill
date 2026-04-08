@@ -38,7 +38,7 @@ Other Skills give you text. This one lets Cook answer in person.
 
 ### Response 1: Press play
 
-<video src="output/cook_tts_20260408_innovation.mp4" controls width="100%"></video>
+https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_innovation.mp4
 
 > I appreciate the question.
 >
@@ -54,7 +54,7 @@ Other Skills give you text. This one lets Cook answer in person.
 
 The reasoning and wording differ each time — because this isn't a template, it's a thinking framework in action.
 
-<video src="output/cook_tts_20260408_141622.mp4" controls width="100%"></video>
+https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_response2.mp4
 
 ---
 
