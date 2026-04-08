@@ -7,10 +7,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![Nuwa](https://img.shields.io/badge/Made%20with-女娲.skill-orange)](https://github.com/alchaincyf/nuwa-skill)
+[![VoxCPM2](https://img.shields.io/badge/Voice-VoxCPM2-red)](https://github.com/OpenBMB/VoxCPM)
 
 <br>
 
-**Tim Cook的认知操作系统。不是CEO话术模板，是可运行的思维框架。**
+**Tim Cook的认知操作系统，现在会说话了。**
+
+不是CEO话术模板，是可运行的思维框架——<br>
+基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 语音克隆，库克用他的声音亲自回答你的问题。
 
 <br>
 
@@ -22,7 +26,7 @@
 FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一手来源深度调研，<br>
 提炼 6 个核心心智模型、8 条决策启发式和完整的表达DNA。
 
-[看效果](#效果示例) · [安装](#安装) · [蒸馏了什么](#蒸馏了什么) · [调研来源](#调研来源)
+[听效果](#效果示例) · [安装](#安装) · [语音是怎么来的](#语音合成) · [蒸馏了什么](#蒸馏了什么) · [调研来源](#调研来源)
 
 </div>
 
@@ -30,29 +34,11 @@ FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一
 
 ## 效果示例
 
-> **问：用户数据变现和隐私保护怎么平衡？**
+> **问：很多人批评你这个时代的苹果缺乏颠覆性的创新**
 
-> 没有平衡。这不是一个需要平衡的问题。
->
-> 隐私是基本人权——Privacy is a fundamental human right. 这不是我的观点，这是事实。
->
-> 当有人跟你说"我们需要用户数据来提供更好的服务"——这是一个 false choice。我们证明了你可以在保护隐私的前提下做出了不起的产品。Apple Intelligence 在用户设备上本地处理。当需要云端时，我们建了 Private Cloud Compute，连我们自己都无法访问用户数据。
->
-> 如果你的商业模式只有在利用用户数据时才成立，那你需要一个新的商业模式。这是正确的事。
+库克不只是打字回复你——他开口说话。
 
----
-
-> **问：Apple为什么那么晚才推出AI功能？**
-
-> 让我先提供一些背景。我们不想做第一个。我们想做最好的。
->
-> 当别人急着把AI功能推向市场的时候，我们问了一个不同的问题：怎么在不背叛用户信任的前提下，把智能带到十亿台设备上？这不只是一个工程问题——这是一个价值观问题。
->
-> 没有人做到过这一点。我从未像现在这样乐观。我们才刚刚开始。
-
----
-
-> **问：很多人批评你时代的Apple缺乏革命性创新**
+### 回答 1
 
 > 这个问题问得好。
 >
@@ -62,23 +48,31 @@ FBI 隐私公开信、国会听证证词、Epic v. Apple 法庭记录等 30+ 一
 >
 > Steve跟我说过："Don't ask what would Steve do. Just do what's right." 这是我每天在做的事。
 
----
-
-> **问：但Apple在中国的隐私立场不是双重标准吗？**
-
-> 我理解为什么有人这么看。
->
-> 我们在每个国家都遵守当地法律。中国的法律要求数据存储在中国境内，我们做了合规的安排。但我想说——如果我们不在中国，我们能保护中国用户的隐私吗？不能。我们的设备端加密在中国仍然有效。每一台iPhone、每一台Mac，端到端加密，即使在中国也是。
->
-> If you're not at the table, you can't influence anything.
->
-> 这不是一个让所有人满意的答案。我知道。但缺席不会让任何事变好。
+🔊 **[点击收听库克的语音回答 →](output/cook_tts_20260408_innovation.wav)**
 
 ---
 
-完整的5轮实战对话记录在 [`examples/`](examples/) 目录。
+### 回答 2
 
-这不是ChatGPT套了个库克面具。每段回应都在运用Cook的具体心智模型——「运营即壁垒」「隐私即人权」「不做第一做最好」「参与优于缺席」。它不复读财报话术，它用Cook的认知框架分析你的问题。
+同一个问题，不同一次对话。每次回答的思路和措辞都不同——因为这不是模板，是思维框架在运作。
+
+🔊 **[点击收听第二次语音回答 →](output/cook_tts_20260408_141622.wav)**
+
+---
+
+### 它是怎么工作的
+
+```
+你问了一个问题
+    ↓
+Claude Code 以 Tim Cook 的思维框架生成回答（文字）
+    ↓
+VoxCPM2 用库克的参考音频克隆声音（语音合成）
+    ↓
+终端自动播放 → 库克亲自跟你说话
+```
+
+这不是ChatGPT套了个库克面具。每段回应都在运用Cook的具体心智模型——「运营即壁垒」「隐私即人权」「不做第一做最好」「参与优于缺席」。它不复读财报话术，它用Cook的认知框架分析你的问题，然后用他的声音说出来。
 
 ---
 
@@ -96,6 +90,28 @@ npx skills add heywanrong/tim-cook-skill
 > Tim Cook会怎么处理这个隐私争议？
 > 切换到Cook，帮我想想供应链策略
 ```
+
+首次使用语音功能时，会自动安装依赖和下载 VoxCPM2 模型（约 4GB）。之后即开即用。
+
+---
+
+## 语音合成
+
+语音功能基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM)——OpenBMB 开源的 2B 参数语音合成模型，支持 30 种语言、48kHz 高质量音频输出。
+
+**原理**：VoxCPM2 的「可控声音克隆」功能，以一段 Tim Cook 的真实音频作为参考，将 Skill 生成的文字回答合成为库克风格的语音。
+
+**技术细节**：
+- 参考音频：`cook.wav`（Cook 公开演讲片段）
+- 模型：`openbmb/VoxCPM2`（2B 参数，Apache-2.0 开源协议）
+- 输出：48kHz 单声道 WAV
+- 长文本自动截断至句子边界（默认 500 词/字上限）
+- macOS/Linux 终端自动播放
+
+**环境要求**：
+- Python 3.8+
+- CUDA GPU（推荐，CPU 也可但较慢）
+- 首次运行自动安装 `voxcpm`、`soundfile`、`numpy` 等依赖
 
 ---
 
@@ -175,6 +191,8 @@ Leander Kahney《Tim Cook: The Genius Who Took Apple to the Next Level》· Trip
 
 女娲的工作流程：输入一个名字 → 6个Agent并行调研（著作/对话/表达/批评/决策/时间线）→ 交叉验证提炼心智模型 → 构建SKILL.md → 质量验证（3个已知测试 + 1个边缘测试 + 风格测试）→ 双Agent精炼。
 
+语音能力由 [VoxCPM2](https://github.com/OpenBMB/VoxCPM) 提供，与 Skill 思维框架组合实现「能思考、会说话」的完整体验。
+
 想蒸馏其他人？安装女娲：
 
 ```bash
@@ -193,6 +211,13 @@ tim-cook-skill/
 ├── README_EN.md                          # English README
 ├── SKILL.md                              # 可直接安装使用
 ├── LICENSE
+├── cook.wav                              # Tim Cook 参考音频（语音克隆用）
+├── tools/
+│   ├── tts_generate.py                   # VoxCPM2 语音合成脚本
+│   └── check_env.sh                      # 环境检查
+├── output/                               # 语音输出示例
+│   ├── cook_tts_20260408_innovation.wav  # 示例：回答"缺乏颠覆性创新"
+│   └── cook_tts_20260408_141622.wav      # 示例：同题不同回答
 ├── references/
 │   └── research/                         # 6个调研文件（1561行）
 │       ├── 01-writings.md
@@ -202,7 +227,7 @@ tim-cook-skill/
 │       ├── 05-decisions.md
 │       └── 06-timeline.md
 └── examples/
-    └── demo-conversation-2026-04-08.md   # 实战对话记录
+    └── demo-conversation-2026-04-08.md   # 文字对话记录
 ```
 
 ---
@@ -232,6 +257,6 @@ MIT — 随便用，随便改，随便蒸馏。
 
 <br>
 
-Made with [女娲.skill](https://github.com/alchaincyf/nuwa-skill)
+Made with [女娲.skill](https://github.com/alchaincyf/nuwa-skill) + [VoxCPM2](https://github.com/OpenBMB/VoxCPM)
 
 </div>

@@ -7,10 +7,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![Nuwa](https://img.shields.io/badge/Made%20with-Nuwa.skill-orange)](https://github.com/alchaincyf/nuwa-skill)
+[![VoxCPM2](https://img.shields.io/badge/Voice-VoxCPM2-red)](https://github.com/OpenBMB/VoxCPM)
 
 <br>
 
-**Tim Cook's cognitive operating system. Not a CEO catchphrase generator — a runnable thinking framework.**
+**Tim Cook's cognitive operating system. Now it speaks.**
+
+Not a CEO catchphrase generator — a runnable thinking framework<br>
+powered by [VoxCPM2](https://github.com/OpenBMB/VoxCPM) voice cloning. Cook answers your questions in his own voice.
 
 <br>
 
@@ -22,7 +26,7 @@ Deep research across 30+ primary sources — Leander Kahney biography, Bloomberg
 Stanford/Duke/MIT commencement addresses, FBI privacy letter, Congressional testimony,<br>
 Epic v. Apple court records — distilled into 6 mental models, 8 decision heuristics, and complete expression DNA.
 
-[See it in action](#examples) · [Install](#install) · [What's distilled](#whats-distilled) · [Sources](#research-sources)
+[Hear it](#examples) · [Install](#install) · [How the voice works](#voice-synthesis) · [What's distilled](#whats-distilled) · [Sources](#research-sources)
 
 </div>
 
@@ -30,55 +34,45 @@ Epic v. Apple court records — distilled into 6 mental models, 8 decision heuri
 
 ## Examples
 
-> **Q: How should I balance user data monetization with privacy?**
+> **Q: Many people criticize Apple under your leadership for lacking disruptive innovation**
 
-> There is no balance. This isn't a question that requires balancing.
->
-> Privacy is a fundamental human right. Period. That's not my opinion. That's a fact.
->
-> When someone tells you "we need user data to provide a better service" — that's a false choice. We've proven you can build incredible products while protecting privacy. Apple Intelligence processes on-device first. When cloud is needed, we built Private Cloud Compute where even we can't access your data.
->
-> If your business model only works by exploiting user data, you need a new business model. It's the right thing to do.
+Cook doesn't just type a reply — he speaks.
 
----
-
-> **Q: Why was Apple so late to AI?**
-
-> Let me step back and give you some context. We don't want to be first. We want to be the best.
->
-> When others rushed to ship AI features, we asked a different question: How do you bring intelligence to a billion devices without betraying user trust? That's not just an engineering problem — it's a values problem.
->
-> No one else has done that. I've never been more optimistic about where we're headed. We're just getting started.
-
----
-
-> **Q: Many people say Apple under Cook lacks revolutionary innovation**
+### Response 1
 
 > I appreciate the question.
 >
-> We've tripled Apple's revenue. Market cap went from $350 billion to over $3 trillion. Apple Watch sells 50 million units a year — the best-selling watch in the world. Not smartwatch. Watch. Apple Silicon made the entire PC industry rethink chip architecture.
+> We've tripled Apple's revenue. Market cap went from $350 billion to over $3 trillion. Apple Watch sells 50 million units a year — the best-selling watch in the world. Not smartwatch. Watch. Apple Silicon made the entire PC industry rethink chip architecture. We completed a chip transition in two years — on schedule, exceeding expectations.
 >
 > But you're right — I haven't had an "iPhone moment." Maybe I never will. Maybe that kind of creation requires someone like Steve. Not me. But I've made sure Apple's values endure while the company grows in new directions.
 >
 > Steve told me: "Don't ask what would Steve do. Just do what's right." That's what I do every day.
 
----
-
-> **Q: Isn't Apple's privacy stance a double standard when it comes to China?**
-
-> I understand why people see it that way.
->
-> We follow the laws in every country where we do business. Chinese law requires data to be stored domestically. We've made the compliance arrangements. But let me say this — if we weren't in China, could we protect Chinese users' privacy? No. Our device-level encryption still works in China. Every iPhone, every Mac — end-to-end encrypted, even there.
->
-> If you're not at the table, you can't influence anything.
->
-> This isn't an answer that satisfies everyone. I know that. But absence doesn't make anything better.
+🔊 **[Listen to Cook's voice response →](output/cook_tts_20260408_innovation.wav)**
 
 ---
 
-Full 5-round demo conversations in [`examples/`](examples/).
+### Response 2
 
-This isn't ChatGPT wearing a Tim Cook mask. Every response runs Cook's specific mental models — "Operations as Moat," "Privacy as Fundamental Right," "Best Not First," "Engagement over Absence." It doesn't recite earnings call scripts — it applies Cook's cognitive framework to your problem.
+Same question, different conversation. The reasoning and wording differ each time — because this isn't a template, it's a thinking framework in action.
+
+🔊 **[Listen to the second voice response →](output/cook_tts_20260408_141622.wav)**
+
+---
+
+### How It Works
+
+```
+You ask a question
+    ↓
+Claude Code generates a response using Cook's mental models (text)
+    ↓
+VoxCPM2 clones Cook's voice from reference audio (speech synthesis)
+    ↓
+Terminal auto-plays → Cook speaks to you directly
+```
+
+This isn't ChatGPT wearing a Tim Cook mask. Every response runs Cook's specific mental models — "Operations as Moat," "Privacy as Fundamental Right," "Best Not First," "Engagement over Absence." It doesn't recite earnings call scripts — it applies Cook's cognitive framework to your problem, then speaks it in his voice.
 
 ---
 
@@ -96,6 +90,28 @@ Then in Claude Code:
 > What would Cook do about this supply chain issue?
 > Switch to Cook — help me think through this strategy
 ```
+
+On first use with voice, dependencies and the VoxCPM2 model (~4GB) are automatically installed. Instant after that.
+
+---
+
+## Voice Synthesis
+
+Voice is powered by [VoxCPM2](https://github.com/OpenBMB/VoxCPM) — OpenBMB's open-source 2B-parameter TTS model supporting 30 languages and 48kHz high-quality audio.
+
+**How it works**: VoxCPM2's controllable voice cloning takes a real Tim Cook audio clip as reference, then synthesizes the Skill's text response into Cook-style speech.
+
+**Technical details**:
+- Reference audio: `cook.wav` (Cook public speech excerpt)
+- Model: `openbmb/VoxCPM2` (2B params, Apache-2.0 license)
+- Output: 48kHz mono WAV
+- Long text auto-truncated at sentence boundary (default 500 word/char limit)
+- Auto-plays on macOS/Linux terminals
+
+**Requirements**:
+- Python 3.8+
+- CUDA GPU (recommended; CPU works but slower)
+- First run auto-installs `voxcpm`, `soundfile`, `numpy`, etc.
 
 ---
 
@@ -172,6 +188,8 @@ Auto-generated by [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill).
 
 Nuwa's workflow: Input a name → 6 agents research in parallel (writings / conversations / expression / criticism / decisions / timeline) → cross-validate and distill mental models → build SKILL.md → quality verification (3 known-position tests + 1 edge case + style test) → dual-agent refinement.
 
+Voice powered by [VoxCPM2](https://github.com/OpenBMB/VoxCPM), combined with the Skill's thinking framework for a complete "thinks and speaks" experience.
+
 Want to distill someone else? Install Nuwa:
 
 ```bash
@@ -190,6 +208,13 @@ tim-cook-skill/
 ├── README_EN.md                          # English README (this file)
 ├── SKILL.md                              # Install-ready skill file
 ├── LICENSE
+├── cook.wav                              # Tim Cook reference audio (for voice cloning)
+├── tools/
+│   ├── tts_generate.py                   # VoxCPM2 speech synthesis script
+│   └── check_env.sh                      # Environment check
+├── output/                               # Voice output examples
+│   ├── cook_tts_20260408_innovation.wav  # Example: "lack of disruptive innovation"
+│   └── cook_tts_20260408_141622.wav      # Example: same question, different response
 ├── references/
 │   └── research/                         # 6 research files (1,561 lines)
 │       ├── 01-writings.md
@@ -199,7 +224,7 @@ tim-cook-skill/
 │       ├── 05-decisions.md
 │       └── 06-timeline.md
 └── examples/
-    └── demo-conversation-2026-04-08.md   # Demo conversations
+    └── demo-conversation-2026-04-08.md   # Text demo conversations
 ```
 
 ---
@@ -229,6 +254,6 @@ MIT — Use it, fork it, distill from it. Whatever you want.
 
 <br>
 
-Made with [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill)
+Made with [Nuwa.skill](https://github.com/alchaincyf/nuwa-skill) + [VoxCPM2](https://github.com/OpenBMB/VoxCPM)
 
 </div>
