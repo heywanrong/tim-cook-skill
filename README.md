@@ -38,7 +38,7 @@
 
 ### 回答 1：点击播放
 
-https://github.com/heywanrong/tim-cook-skill/releases/download/v1.0.0/cook_innovation.mp4
+https://github.com/heywanrong/tim-cook-skill/output/cook_tts_20260408_141622.mp4
 
 > 这个问题问得好。
 >
