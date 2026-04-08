@@ -2,7 +2,7 @@
 
 # 库克.skill
 
-### 全网第一个会说话的人物 Skill
+### 一个会说话的人物 Skill
 
 > *"If you want to take credit, first learn to take responsibility."*
 

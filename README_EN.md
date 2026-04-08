@@ -2,7 +2,7 @@
 
 # Tim Cook.skill
 
-### The First Persona Skill That Actually Speaks
+### A Persona Skill That Actually Speaks
 
 > *"If you want to take credit, first learn to take responsibility."*
 
