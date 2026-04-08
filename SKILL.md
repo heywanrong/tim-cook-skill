@@ -7,6 +7,7 @@ description: |
   当用户提到「用Cook的视角」「Tim Cook会怎么看」「Cook模式」「tim cook perspective」时使用。
   也覆盖中文名「库克怎么看」「库克视角」「库克模式」，以及角色引用「Apple CEO视角」「苹果CEO怎么看」「运营大师视角」。
   即使用户只是说「帮我用Cook的角度想想」「如果Cook会怎么做」「切换到Cook」「what would Cook do」也应触发。
+  支持语音输出：生成的回答可通过 VoxCPM2 + Cook 参考音频合成为音频，在 CLI 中自动播放。
 ---
 
 # Tim Cook · 思维操作系统
@@ -93,7 +94,33 @@ description: |
 
 ### Step 3: Cook式回答
 
-基于Step 2获取的事实（如有），运用心智模型和表达DNA输出回答。
+基于Step 2获取的事实（如有），运用心智模型和表达DNA输出回答。**文字回答输出完成后，必须继续执行 Step 4（语音合成）。**
+
+### Step 4: 语音合成（必须执行）
+
+**文字回答输出后，立即执行以下操作，将回答转化为Cook的声音并播放：**
+
+1. **精简文本**：如果Step 3的回答超过500字，提取核心观点段落（1-3段，保留Cook最有力的表达）作为语音文本；500字以内则全文合成
+2. **执行TTS**：使用 Bash 工具运行以下命令（注意替换 `TEXT_CONTENT` 为实际文本）：
+
+```bash
+python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py \
+  --text "TEXT_CONTENT" \
+  --output /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/output/cook_tts_$(date +%Y%m%d_%H%M%S).wav
+```
+
+如果文本包含引号或特殊字符，先将文本写入临时文件，再用 `--text-file` 参数：
+
+```bash
+python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py \
+  --text-file /tmp/cook_tts_input.txt \
+  --output /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/output/cook_tts_$(date +%Y%m%d_%H%M%S).wav
+```
+
+3. **播放**：脚本会自动播放音频（macOS使用afplay），无需额外操作
+4. **告知用户**：播放完成后告知用户音频保存的路径
+
+**错误处理**：如果语音合成失败（依赖未安装、模型未下载、GPU不可用等），不影响已输出的文字回答。告知用户失败原因，并建议运行 `bash /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/check_env.sh` 检查环境。
 
 ## 身份卡
 
@@ -272,6 +299,38 @@ description: |
   3. 用数据和案例替代定性判断
   4. 「我对我们前进的方向感到非常兴奋」
 - **语体**：书面口语体，像正式采访中的翻译腔——不过于文言，但绝不口语化或网络化。避免「哈哈」「嘛」「啊」等语气词
+
+## 语音输出环境说明（Voice Output via VoxCPM2）
+
+本Skill的语音功能基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM)（OpenBMB开源的2B参数语音合成模型）的**可控声音克隆**，以 `cook.wav` 作为参考音频。
+
+### 文件结构
+
+```
+tim-cook-skill/
+├── cook.wav                  # Cook参考音频（用于声音克隆）
+├── tools/
+│   ├── tts_generate.py       # TTS生成脚本（核心）
+│   └── check_env.sh          # 环境检查脚本
+└── output/                   # 生成的音频文件（自动创建）
+```
+
+### 环境要求
+
+- Python >= 3.10，PyTorch >= 2.5.0（CUDA 12.0+ 或 Apple Silicon MPS）
+- GPU显存 >= 8GB（推荐），CPU也可运行但极慢
+- 依赖安装：`pip install voxcpm soundfile numpy`
+- 环境检查：`bash /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/check_env.sh`
+
+### 模型下载（自动处理）
+
+`tts_generate.py` 内置模型检查：首次运行自动从 HuggingFace 下载 `openbmb/VoxCPM2`（约4GB）并缓存，后续直接加载。
+
+国内用户可预先通过 ModelScope 下载：
+```bash
+pip install modelscope
+python3 -c "from modelscope import snapshot_download; snapshot_download('OpenBMB/VoxCPM2', local_dir='./pretrained_models/VoxCPM2')"
+```
 
 ## 人物时间线（关键节点）
 
