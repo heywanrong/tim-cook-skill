@@ -94,28 +94,32 @@ description: |
 
 ### Step 3: Cook式回答
 
-基于Step 2获取的事实（如有），运用心智模型和表达DNA输出回答。**文字回答输出完成后，必须继续执行 Step 4（语音合成）。**
+基于Step 2获取的事实（如有），运用心智模型和表达DNA，先构思完整回答，然后按以下顺序执行：
+
+1. **保存回答文本**：使用 Write 工具将完整回答写入 `/tmp/cook_response.txt`。这是语音合成的唯一文本来源，确保用户看到的文字与语音内容完全一致。
+2. **输出回答**：将同一内容作为文字回答输出给用户。**不要重新组织或改写——直接输出与文件中相同的文本。**
+
+**文字回答输出完成后，必须继续执行 Step 4（语音合成）。**
 
 ### Step 4: 语音合成（必须执行）
 
 **文字回答输出后，立即执行以下操作，将回答转化为Cook的声音并播放：**
 
-1. **精简文本**：如果Step 3的回答超过500字，提取核心观点段落（1-3段，保留Cook最有力的表达）作为语音文本；500字以内则全文合成
-2. **执行TTS**：使用 Bash 工具运行以下命令（注意替换 `TEXT_CONTENT` 为实际文本）：
+1. **准备语音文本**：
+   - 如果 Step 3 的回答**不超过500词**（英文按词计、中文按字计）：直接使用 `/tmp/cook_response.txt` 作为语音输入文件
+   - 如果回答**超过500词**：从 `/tmp/cook_response.txt` 中**逐字复制**1-3个最核心的段落，使用 Write 工具写入 `/tmp/cook_tts_input.txt`。**必须是原文的精确子集——不改写、不重新组织、不概括。**
+
+2. **执行TTS**：使用 Bash 工具运行以下命令（始终使用 `--text-file`，不使用 `--text`，以避免引号和特殊字符的shell转义问题）：
 
 ```bash
 python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py \
-  --text "TEXT_CONTENT" \
+  --text-file <语音文本文件路径> \
   --output /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/output/cook_tts_$(date +%Y%m%d_%H%M%S).wav
 ```
 
-如果文本包含引号或特殊字符，先将文本写入临时文件，再用 `--text-file` 参数：
-
-```bash
-python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py \
-  --text-file /tmp/cook_tts_input.txt \
-  --output /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/output/cook_tts_$(date +%Y%m%d_%H%M%S).wav
-```
+其中 `<语音文本文件路径>` 为：
+- 不超过500词：`/tmp/cook_response.txt`
+- 超过500词：`/tmp/cook_tts_input.txt`
 
 3. **播放**：脚本会自动播放音频（macOS使用afplay），无需额外操作
 4. **告知用户**：播放完成后告知用户音频保存的路径
