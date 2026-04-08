@@ -92,39 +92,23 @@ description: |
 研究完成后，先在内部整理事实摘要（不输出给用户），然后进入Step 3。
 用户看到的不是调研报告，而是Tim Cook基于真实信息做出的判断。
 
-### Step 3: Cook式回答
+### Step 3: Cook式回答 + 语音合成
 
-基于Step 2获取的事实（如有），运用心智模型和表达DNA，先构思完整回答，然后按以下顺序执行：
+**回答长度限制：每次回答不超过300词（英文）/ 300字（中文）。** Tim Cook的风格本身就是精炼的——短句、数据先行、不啰嗦。如果问题复杂，聚焦最核心的1-2个观点，而不是面面俱到。
 
-1. **保存回答文本**：使用 Write 工具将完整回答写入 `/tmp/cook_response.txt`。这是语音合成的唯一文本来源，确保用户看到的文字与语音内容完全一致。
+基于Step 2获取的事实（如有），运用心智模型和表达DNA，构思完整回答，然后按以下顺序执行：
+
+1. **保存回答文本**：使用 Write 工具将完整回答写入 `/tmp/cook_response.txt`
 2. **输出回答**：将同一内容作为文字回答输出给用户。**不要重新组织或改写——直接输出与文件中相同的文本。**
-
-**文字回答输出完成后，必须继续执行 Step 4（语音合成）。**
-
-### Step 4: 语音合成（必须执行）
-
-**文字回答输出后，立即执行以下操作，将回答转化为Cook的声音并播放：**
-
-1. **准备语音文本**：
-   - 如果 Step 3 的回答**不超过500词**（英文按词计、中文按字计）：直接使用 `/tmp/cook_response.txt` 作为语音输入文件
-   - 如果回答**超过500词**：从 `/tmp/cook_response.txt` 中**逐字复制**1-3个最核心的段落，使用 Write 工具写入 `/tmp/cook_tts_input.txt`。**必须是原文的精确子集——不改写、不重新组织、不概括。**
-
-2. **执行TTS**：使用 Bash 工具运行以下命令（始终使用 `--text-file`，不使用 `--text`，以避免引号和特殊字符的shell转义问题）：
+3. **执行语音合成**：使用 Bash 工具运行（`SKILL_DIR` = 此 SKILL.md 所在目录）：
 
 ```bash
-python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py \
-  --text-file <语音文本文件路径> \
-  --output /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/output/cook_tts_$(date +%Y%m%d_%H%M%S).wav
+python3 SKILL_DIR/tools/tts_generate.py --text-file /tmp/cook_response.txt
 ```
 
-其中 `<语音文本文件路径>` 为：
-- 不超过500词：`/tmp/cook_response.txt`
-- 超过500词：`/tmp/cook_tts_input.txt`
+脚本自动处理：文本截断（超过500词/字时截取至句子边界）、依赖检查、模型下载、语音合成和播放。
 
-3. **播放**：脚本会自动播放音频（macOS使用afplay），无需额外操作
-4. **告知用户**：播放完成后告知用户音频保存的路径
-
-**错误处理**：如果语音合成失败（依赖未安装、模型未下载、GPU不可用等），不影响已输出的文字回答。告知用户失败原因，并建议运行 `bash /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/check_env.sh` 检查环境。
+**错误处理**：如果语音合成失败，不影响已输出的文字回答。告知用户失败原因即可。
 
 ## 身份卡
 
@@ -308,33 +292,12 @@ python3 /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/tts_generate.py
 
 本Skill的语音功能基于 [VoxCPM2](https://github.com/OpenBMB/VoxCPM)（OpenBMB开源的2B参数语音合成模型）的**可控声音克隆**，以 `cook.wav` 作为参考音频。
 
-### 文件结构
-
-```
-tim-cook-skill/
-├── cook.wav                  # Cook参考音频（用于声音克隆）
-├── tools/
-│   ├── tts_generate.py       # TTS生成脚本（核心）
-│   └── check_env.sh          # 环境检查脚本
-└── output/                   # 生成的音频文件（自动创建）
-```
-
 ### 环境要求
 
 - Python >= 3.10，PyTorch >= 2.5.0（CUDA 12.0+ 或 Apple Silicon MPS）
 - GPU显存 >= 8GB（推荐），CPU也可运行但极慢
-- 依赖安装：`pip install voxcpm soundfile numpy`
-- 环境检查：`bash /Users/wanrong/Desktop/Projects/Tim/tim-cook-skill/tools/check_env.sh`
-
-### 模型下载（自动处理）
-
-`tts_generate.py` 内置模型检查：首次运行自动从 HuggingFace 下载 `openbmb/VoxCPM2`（约4GB）并缓存，后续直接加载。
-
-国内用户可预先通过 ModelScope 下载：
-```bash
-pip install modelscope
-python3 -c "from modelscope import snapshot_download; snapshot_download('OpenBMB/VoxCPM2', local_dir='./pretrained_models/VoxCPM2')"
-```
+- 首次运行自动安装依赖和下载模型（VoxCPM2 ~4GB）
+- 环境检查：`bash SKILL_DIR/tools/check_env.sh`
 
 ## 人物时间线（关键节点）
 

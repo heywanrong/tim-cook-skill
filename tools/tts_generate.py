@@ -11,7 +11,10 @@ Usage:
 """
 
 import argparse
+import contextlib
+import io
 import os
+import re
 import subprocess
 import sys
 import time
@@ -72,23 +75,58 @@ def download_model_if_needed():
 
 
 def load_model():
-    """Load VoxCPM2 model."""
+    """Load VoxCPM2 model (suppress library debug output)."""
     from voxcpm import VoxCPM
 
-    print("[MODEL] Loading VoxCPM2...")
+    print("[TTS] Loading model...")
     t0 = time.time()
-    model = VoxCPM.from_pretrained(
-        hf_model_id=MODEL_ID,
-        load_denoiser=False,
-        optimize=True,
-    )
-    print(f"[MODEL] Loaded in {time.time() - t0:.1f}s")
+    with contextlib.redirect_stderr(io.StringIO()):
+        model = VoxCPM.from_pretrained(
+            hf_model_id=MODEL_ID,
+            load_denoiser=False,
+            optimize=True,
+        )
+    print(f"[TTS] Model loaded in {time.time() - t0:.1f}s")
     return model
+
+
+def truncate_text(text, max_words):
+    """Truncate text to max_words at the nearest sentence boundary.
+
+    For CJK-dominant text, max_words is treated as max characters.
+    """
+    # Detect CJK-dominant text
+    cjk_chars = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf]', text))
+    is_cjk = cjk_chars > len(text) * 0.3
+
+    if is_cjk:
+        if len(text) <= max_words:
+            return text
+        # Truncate at Chinese sentence boundary
+        truncated = text[:max_words]
+        for sep in ['。', '！', '？', '；', '\n']:
+            idx = truncated.rfind(sep)
+            if idx > max_words * 0.5:
+                truncated = truncated[:idx + 1]
+                break
+        print(f"[TTS] Text truncated from {len(text)} to {len(truncated)} chars for voice synthesis")
+        return truncated
+    else:
+        words = text.split()
+        if len(words) <= max_words:
+            return text
+        truncated = ' '.join(words[:max_words])
+        for sep in ['. ', '! ', '? ', '.\n', '\n']:
+            idx = truncated.rfind(sep)
+            if idx > len(truncated) * 0.5:
+                truncated = truncated[:idx + len(sep.rstrip())]
+                break
+        print(f"[TTS] Text truncated from {len(words)} to ~{len(truncated.split())} words for voice synthesis")
+        return truncated
 
 
 def generate_speech(model, text, output_path):
     """Generate speech using VoxCPM2 with Cook's voice as reference."""
-    import numpy as np
     import soundfile as sf
 
     ref_audio = str(REFERENCE_AUDIO)
@@ -96,9 +134,7 @@ def generate_speech(model, text, output_path):
         print(f"[ERROR] Reference audio not found: {ref_audio}")
         sys.exit(1)
 
-    print(f"[TTS] Generating speech...")
-    print(f"[TTS] Text: {text[:80]}{'...' if len(text) > 80 else ''}")
-    print(f"[TTS] Reference: {ref_audio}")
+    print(f"[TTS] Generating speech for {len(text.split())} words...")
 
     t0 = time.time()
     wav = model.generate(
@@ -111,20 +147,17 @@ def generate_speech(model, text, output_path):
     sr = model.tts_model.sample_rate
     duration = len(wav) / sr
 
-    print(f"[TTS] Generated {duration:.1f}s audio in {elapsed:.1f}s (RTF={elapsed/duration:.2f})")
+    print(f"[TTS] Generated {duration:.1f}s audio in {elapsed:.1f}s")
 
-    # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-
     sf.write(output_path, wav, sr)
-    print(f"[TTS] Saved to: {output_path}")
 
     return output_path, duration
 
 
 def play_audio(filepath):
     """Play audio file via macOS afplay or fallback."""
-    print(f"[PLAY] Playing audio...")
+    print(f"[TTS] Playing audio...")
     if sys.platform == "darwin":
         subprocess.run(["afplay", filepath])
     elif sys.platform == "linux":
@@ -149,11 +182,16 @@ def generate_output_path(output_arg):
 
 
 def main():
+    # Suppress VoxCPM2's internal tqdm progress bars (which show misleading 0/2000 counters)
+    os.environ["TQDM_DISABLE"] = "1"
+
     parser = argparse.ArgumentParser(description="Tim Cook Voice TTS via VoxCPM2")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--text", type=str, help="Text to synthesize")
     group.add_argument("--text-file", type=str, help="Path to text file to synthesize")
     parser.add_argument("--output", "-o", type=str, default=None, help="Output wav path")
+    parser.add_argument("--max-words", type=int, default=500,
+                        help="Max words for TTS (default: 500). Longer text is truncated at sentence boundary.")
     parser.add_argument("--no-play", action="store_true", help="Don't auto-play the audio")
     args = parser.parse_args()
 
@@ -168,25 +206,20 @@ def main():
         print("[ERROR] Empty text input.")
         sys.exit(1)
 
+    # Truncate long text for TTS
+    text = truncate_text(text, args.max_words)
+
     output_path = generate_output_path(args.output)
 
-    # Step 1: Check environment
     check_dependencies()
-
-    # Step 2: Download model if needed
     download_model_if_needed()
-
-    # Step 3: Load model
     model = load_model()
+    output_path, duration = generate_speech(model, text, output_path)
 
-    # Step 4: Generate speech
-    generate_speech(model, text, output_path)
-
-    # Step 5: Play audio
     if not args.no_play:
         play_audio(output_path)
 
-    print(f"\n[DONE] Output: {output_path}")
+    print(f"[TTS] Done. Output: {output_path}")
 
 
 if __name__ == "__main__":
