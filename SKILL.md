@@ -122,25 +122,30 @@ python3 SKILL_DIR/tools/text_save.py --text "你生成的完整回答文本"
 
 然后将同一内容作为文字回答输出给用户。**不要重新组织或改写——直接输出与文件中相同的文本。**
 
-#### Step 3b: 语音合成
+#### Step 3b: 流式语音合成 + 播放（推荐，默认方式）
 
 文本保存成功后，使用 Bash 工具运行：
 
 ```bash
-python3 SKILL_DIR/tools/tts_synthesize.py --text-file /tmp/cook_response.txt
+python3 SKILL_DIR/tools/tts_stream.py --text-file /tmp/cook_response.txt
 ```
 
-脚本自动处理：文本截断（超过500词/字时截取至句子边界）、依赖检查、模型下载、语音合成。输出最后一行为 `[OUTPUT] /path/to/file.wav`。**确认看到 `[OUTPUT]` 行后再继续。**
+**流式模式**：边合成边播放。用户几秒内就能开始听到 Cook 的声音，不需要等待整段语音合成完毕。脚本自动处理依赖检查、模型下载、文本截断、语音合成和即时播放。
 
-#### Step 3c: 播放语音
+如需保存音频文件，添加 `--save /path/to/output.wav`。
 
-语音合成成功后，从上一步输出中提取 wav 文件路径，使用 Bash 工具运行：
+#### Step 3b (备选): 分步语音合成 + 播放
+
+如果流式模式出现问题，可改用分步方式：
 
 ```bash
+# 合成
+python3 SKILL_DIR/tools/tts_synthesize.py --text-file /tmp/cook_response.txt
+# 播放（从上一步输出中获取 wav 路径）
 python3 SKILL_DIR/tools/audio_play.py --file /path/to/output.wav
 ```
 
-**错误处理**：每一步独立运行。如果某一步失败，后续步骤跳过，但已完成的步骤结果不受影响。文字回答始终优先保障输出。
+**错误处理**：每一步独立运行。如果语音合成失败，不影响已输出的文字回答。告知用户失败原因即可。
 
 ## 身份卡
 

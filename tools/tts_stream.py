@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Step 2: Synthesize speech from text using VoxCPM2 + Cook reference audio.
+Combined Step 2+3: Synthesize speech AND play simultaneously (streaming).
 
-Reads text from a file, generates a WAV file, and prints the output path.
-Does NOT play the audio — that is handled by audio_play.py.
+Instead of waiting for full synthesis before playback, this script starts
+playing audio chunks as soon as they are generated. This dramatically
+reduces perceived latency — the user hears Cook's voice within seconds.
 
 Usage:
-    python3 tts_synthesize.py --text-file /tmp/cook_response.txt
-    python3 tts_synthesize.py --text-file /tmp/cook_response.txt --output /path/to/out.wav
-    python3 tts_synthesize.py --text "Hello, this is Tim Cook."
+    python3 tts_stream.py --text-file /tmp/cook_response.txt
+    python3 tts_stream.py --text "Hello, this is Tim Cook."
+    python3 tts_stream.py --text-file /tmp/cook_response.txt --save output/response.wav
 """
 
 import argparse
@@ -18,6 +19,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -49,33 +51,27 @@ def check_dependencies():
 
 
 def check_model_available():
-    """Check if VoxCPM2 model is already cached locally."""
     from huggingface_hub import try_to_load_from_cache
     result = try_to_load_from_cache(MODEL_ID, "config.json")
-    if result is None or isinstance(result, type(None)):
-        return False
-    return True
+    return result is not None and not isinstance(result, type(None))
 
 
 def download_model_if_needed():
-    """Download VoxCPM2 model if not already cached."""
     try:
         cached = check_model_available()
     except Exception:
         cached = False
 
     if cached:
-        print(f"[MODEL] VoxCPM2 already cached, skipping download.")
+        print("[MODEL] VoxCPM2 already cached.")
     else:
-        print(f"[MODEL] VoxCPM2 not found locally. Downloading from HuggingFace...")
-        print(f"[MODEL] This may take a while on first run (~4GB)...")
+        print("[MODEL] Downloading VoxCPM2 (~4GB)...")
         from huggingface_hub import snapshot_download
         snapshot_download(MODEL_ID)
-        print(f"[MODEL] Download complete.")
+        print("[MODEL] Download complete.")
 
 
 def load_model():
-    """Load VoxCPM2 model (suppress library debug output)."""
     from voxcpm import VoxCPM
 
     print("[TTS] Loading model...")
@@ -120,8 +116,9 @@ def truncate_text(text, max_words):
         return truncated
 
 
-def generate_speech(model, text, output_path, timesteps=6):
-    """Generate speech using VoxCPM2 with Cook's voice as reference."""
+def stream_and_play(model, text, save_path=None, timesteps=6):
+    """Generate speech in streaming mode, playing each chunk as it arrives."""
+    import numpy as np
     import soundfile as sf
 
     ref_audio = str(REFERENCE_AUDIO)
@@ -129,48 +126,84 @@ def generate_speech(model, text, output_path, timesteps=6):
         print(f"[ERROR] Reference audio not found: {ref_audio}")
         sys.exit(1)
 
-    print(f"[TTS] Synthesizing speech (timesteps={timesteps})...")
+    sr = model.tts_model.sample_rate
+    all_chunks = []
+    chunk_idx = 0
     t0 = time.time()
-    wav = model.generate(
+
+    print(f"[STREAM] Starting streaming synthesis (timesteps={timesteps})...")
+
+    for chunk in model.generate_streaming(
         text=text,
         reference_wav_path=ref_audio,
         cfg_value=2.0,
         inference_timesteps=timesteps,
-    )
-    elapsed = time.time() - t0
-    sr = model.tts_model.sample_rate
-    duration = len(wav) / sr
+    ):
+        chunk_idx += 1
+        chunk_duration = len(chunk) / sr
 
-    print(f"[TTS] Generated {duration:.1f}s audio in {elapsed:.1f}s")
+        if chunk_idx == 1:
+            first_chunk_time = time.time() - t0
+            print(f"[STREAM] First audio chunk in {first_chunk_time:.1f}s ({chunk_duration:.1f}s audio)")
 
-    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    sf.write(output_path, wav, sr)
-    print(f"[TTS] Saved to {output_path}")
+        all_chunks.append(chunk)
 
-    return output_path, duration
+        # Write chunk to temp file and play it
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = tmp.name
+            sf.write(tmp_path, chunk, sr)
+
+        try:
+            if sys.platform == "darwin":
+                subprocess.run(["afplay", tmp_path], check=False)
+            elif sys.platform == "linux":
+                for cmd in ["aplay", "paplay", "ffplay -nodisp -autoexit"]:
+                    try:
+                        subprocess.run(cmd.split() + [tmp_path], check=False)
+                        break
+                    except FileNotFoundError:
+                        continue
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+    total_time = time.time() - t0
+    full_wav = np.concatenate(all_chunks)
+    total_duration = len(full_wav) / sr
+
+    print(f"[STREAM] Done: {total_duration:.1f}s audio, {chunk_idx} chunks, {total_time:.1f}s total")
+
+    # Optionally save the complete audio
+    if save_path:
+        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
+        sf.write(save_path, full_wav, sr)
+        print(f"[STREAM] Saved to {save_path}")
+
+    return total_duration
 
 
-def generate_output_path(output_arg):
-    """Generate a timestamped output path if none specified."""
-    if output_arg:
-        return output_arg
-    os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    return str(DEFAULT_OUTPUT_DIR / f"cook_tts_{timestamp}.wav")
+def generate_save_path(save_arg):
+    if save_arg:
+        return save_arg
+    return None  # Don't save by default in streaming mode
 
 
 def main():
     os.environ["TQDM_DISABLE"] = "1"
 
-    parser = argparse.ArgumentParser(description="Synthesize Cook voice via VoxCPM2")
+    parser = argparse.ArgumentParser(
+        description="Stream Cook voice: synthesize and play simultaneously")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--text", type=str, help="Text to synthesize")
-    group.add_argument("--text-file", type=str, help="Path to text file to synthesize")
-    parser.add_argument("--output", "-o", type=str, default=None, help="Output wav path")
+    group.add_argument("--text-file", type=str, help="Path to text file")
+    parser.add_argument("--save", "-s", type=str, default=None,
+                        help="Save complete audio to this path (optional)")
     parser.add_argument("--max-words", type=int, default=500,
                         help="Max words for TTS (default: 500)")
     parser.add_argument("--timesteps", type=int, default=6,
-                        help="Diffusion steps (default: 6, range: 4-30. Lower=faster, higher=better quality)")
+                        help="Diffusion steps (default: 6, range: 4-30)")
     args = parser.parse_args()
 
     if args.text_file:
@@ -184,15 +217,13 @@ def main():
         sys.exit(1)
 
     text = truncate_text(text, args.max_words)
-    output_path = generate_output_path(args.output)
 
     check_dependencies()
     download_model_if_needed()
     model = load_model()
-    generate_speech(model, text, output_path, timesteps=args.timesteps)
+    stream_and_play(model, text, save_path=args.save, timesteps=args.timesteps)
 
-    # Print output path on last line for downstream parsing
-    print(f"[OUTPUT] {output_path}")
+    print("[STREAM] Complete.")
 
 
 if __name__ == "__main__":
