@@ -168,12 +168,17 @@ def stream_and_play(model, text, save_path=None, timesteps=6):
     print(f"[STREAM] Done: {total_duration:.1f}s audio, "
           f"{chunk_idx} chunks, {total_time:.1f}s total")
 
-    # Optionally save the complete audio
-    if save_path:
-        import soundfile as sf
-        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
-        sf.write(save_path, full_wav, sr)
-        print(f"[STREAM] Saved to {save_path}")
+    # Always save the complete audio
+    if not save_path:
+        os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        save_path = str(DEFAULT_OUTPUT_DIR / f"cook_tts_{timestamp}.wav")
+
+    import soundfile as sf
+    os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
+    sf.write(save_path, full_wav, sr)
+    print(f"[STREAM] Saved to {save_path}")
+    print(f"[OUTPUT] {save_path}")
 
     return total_duration
 
