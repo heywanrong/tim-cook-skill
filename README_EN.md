@@ -55,11 +55,10 @@ https://github.com/user-attachments/assets/ed251901-1e88-4740-947c-8bb60865eb7d
 | Stage | Time |
 |-------|------|
 | 🧠 Thinking + generating text response | ~10-15 sec |
-| 🎙️ Voice synthesis (VoxCPM2) | ~144 sec (~2.4 min) |
-| 🔊 Audio playback (100.6s of audio) | ~101 sec (~1.7 min) |
-| **📍 Total** | **~4.5 min** |
+| 🎙️ Voice pre-buffering (VoxCPM2 streaming) | ~60-75 sec |
+| 🔊 **Hear Cook's voice** | **~1 min 30 sec** |
 
-💡 The text response appears in **~20 seconds**. Voice synthesis and playback take 90%+ of the time — but it's worth the wait. Hearing Cook speak the words himself hits completely different.
+💡 The text response appears in **~15 seconds**. Voice synthesis runs in the background with pre-buffering — Cook starts speaking at ~1.5 min, smooth and stutter-free. A CUDA GPU can dramatically reduce the wait.
 
 ---
 
