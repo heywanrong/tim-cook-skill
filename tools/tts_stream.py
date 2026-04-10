@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-Combined Step 2+3: Synthesize speech with progress, then play seamlessly.
+Combined Step 2+3: Synthesize speech and play with pre-buffering.
 
-Uses streaming synthesis for progress feedback, then plays the complete
-audio in one pass via sounddevice — zero stuttering guaranteed.
-
-On fast GPUs (RTF < 1), use --live for true real-time streaming playback.
+Default mode: pre-buffers ~15s of audio, then starts playback while
+synthesis continues in background. Smooth playback even when RTF > 1.
 
 Usage:
     python3 tts_stream.py --text-file /tmp/cook_response.txt
     python3 tts_stream.py --text "Hello, this is Tim Cook."
     python3 tts_stream.py --text-file /tmp/cook_response.txt --save output/response.wav
-    python3 tts_stream.py --text-file /tmp/cook_response.txt --live  # real-time streaming
+    python3 tts_stream.py --text-file /tmp/cook_response.txt --prebuffer 20
 """
 
 import argparse
 import contextlib
 import io
 import os
+import queue
 import re
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -32,7 +32,6 @@ MODEL_ID = "openbmb/VoxCPM2"
 
 
 def check_dependencies():
-    """Check and install required Python packages."""
     required = ["voxcpm", "soundfile", "numpy", "sounddevice"]
     missing = []
     for pkg in required:
@@ -40,13 +39,11 @@ def check_dependencies():
             __import__(pkg)
         except ImportError:
             missing.append(pkg)
-
     if missing:
         print(f"[ENV] Installing missing packages: {', '.join(missing)}")
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install"] + missing,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         print("[ENV] Installation complete.")
 
@@ -62,7 +59,6 @@ def download_model_if_needed():
         cached = check_model_available()
     except Exception:
         cached = False
-
     if cached:
         print("[MODEL] VoxCPM2 already cached.")
     else:
@@ -74,24 +70,19 @@ def download_model_if_needed():
 
 def load_model():
     from voxcpm import VoxCPM
-
     print("[TTS] Loading model...")
     t0 = time.time()
     with contextlib.redirect_stderr(io.StringIO()):
         model = VoxCPM.from_pretrained(
-            hf_model_id=MODEL_ID,
-            load_denoiser=False,
-            optimize=True,
+            hf_model_id=MODEL_ID, load_denoiser=False, optimize=True,
         )
     print(f"[TTS] Model loaded in {time.time() - t0:.1f}s")
     return model
 
 
 def truncate_text(text, max_words):
-    """Truncate text to max_words at the nearest sentence boundary."""
     cjk_chars = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf]', text))
     is_cjk = cjk_chars > len(text) * 0.3
-
     if is_cjk:
         if len(text) <= max_words:
             return text
@@ -117,65 +108,8 @@ def truncate_text(text, max_words):
         return truncated
 
 
-def synthesize_with_progress(model, text, timesteps=6):
-    """Streaming synthesis with progress — returns complete audio array."""
-    import numpy as np
-
-    ref_audio = str(REFERENCE_AUDIO)
-    if not os.path.exists(ref_audio):
-        print(f"[ERROR] Reference audio not found: {ref_audio}")
-        sys.exit(1)
-
-    sr = model.tts_model.sample_rate
-    all_chunks = []
-    total_samples = 0
-    chunk_idx = 0
-    t0 = time.time()
-
-    print(f"[TTS] Synthesizing (timesteps={timesteps})...")
-
-    for chunk in model.generate_streaming(
-        text=text,
-        reference_wav_path=ref_audio,
-        cfg_value=2.0,
-        inference_timesteps=timesteps,
-    ):
-        chunk_idx += 1
-        all_chunks.append(chunk)
-        total_samples += len(chunk)
-        duration_so_far = total_samples / sr
-        elapsed = time.time() - t0
-        print(f"\r[TTS] {duration_so_far:.1f}s audio generated ({elapsed:.0f}s elapsed, "
-              f"chunk {chunk_idx})", end="", flush=True)
-
-    print()  # newline after progress
-
-    full_wav = np.concatenate(all_chunks)
-    total_duration = len(full_wav) / sr
-    total_time = time.time() - t0
-
-    print(f"[TTS] Synthesis done: {total_duration:.1f}s audio in {total_time:.1f}s "
-          f"(RTF={total_time / total_duration:.2f})")
-
-    return full_wav, sr
-
-
-def play_seamless(wav, sr):
-    """Play audio in one pass — zero stuttering."""
-    import numpy as np
-    import sounddevice as sd
-
-    wav = wav.astype(np.float32)
-    duration = len(wav) / sr
-    print(f"[PLAY] Playing {duration:.1f}s audio (sr={sr}, dtype={wav.dtype}, "
-          f"samples={len(wav)}, max={wav.max():.4f})...")
-    sd.play(wav, sr, blocksize=2048)
-    sd.wait()
-    print(f"[PLAY] Done.")
-
-
-def synthesize_and_play_live(model, text, timesteps=6):
-    """True streaming: play chunks as they arrive. May stutter if RTF > 1."""
+def stream_with_prebuffer(model, text, timesteps=6, prebuffer_secs=15):
+    """Pre-buffer audio, then play while synthesis continues in background."""
     import numpy as np
     import sounddevice as sd
 
@@ -185,52 +119,85 @@ def synthesize_and_play_live(model, text, timesteps=6):
         sys.exit(1)
 
     sr = model.tts_model.sample_rate
+    audio_queue = queue.Queue()
     all_chunks = []
-    chunk_idx = 0
     t0 = time.time()
 
-    print(f"[LIVE] Streaming synthesis + playback (timesteps={timesteps})...")
-    print(f"[LIVE] Note: may stutter if synthesis is slower than real-time (RTF > 1)")
-
-    stream = sd.OutputStream(samplerate=sr, channels=1, dtype="float32")
-    stream.start()
-
-    try:
+    # --- Synthesis runs in background thread ---
+    def synthesis_worker():
         for chunk in model.generate_streaming(
             text=text,
             reference_wav_path=ref_audio,
             cfg_value=2.0,
             inference_timesteps=timesteps,
         ):
-            chunk_idx += 1
-            all_chunks.append(chunk)
+            chunk_f32 = chunk.astype(np.float32)
+            all_chunks.append(chunk_f32)
+            audio_queue.put(chunk_f32)
+        audio_queue.put(None)  # sentinel: done
 
-            if chunk_idx == 1:
-                print(f"[LIVE] First audio in {time.time() - t0:.1f}s")
+    synth_thread = threading.Thread(target=synthesis_worker, daemon=True)
+    synth_thread.start()
 
-            audio_data = chunk.astype(np.float32).reshape(-1, 1)
-            stream.write(audio_data)
+    # --- Pre-buffer phase ---
+    target_samples = int(prebuffer_secs * sr)
+    buffered_samples = 0
+    prebuffer_chunks = []
+    synthesis_finished_early = False
+
+    print(f"[TTS] Synthesizing (timesteps={timesteps}), "
+          f"pre-buffering {prebuffer_secs}s before playback...")
+
+    while buffered_samples < target_samples:
+        chunk = audio_queue.get()
+        if chunk is None:
+            synthesis_finished_early = True
+            break
+        prebuffer_chunks.append(chunk)
+        buffered_samples += len(chunk)
+        print(f"\r[TTS] Buffered {buffered_samples / sr:.1f}s / {prebuffer_secs}s "
+              f"({time.time() - t0:.0f}s elapsed)", end="", flush=True)
+
+    print()
+    print(f"[PLAY] Starting playback ({buffered_samples / sr:.1f}s buffered)...")
+
+    # --- Playback: pre-buffered chunks first, then live ---
+    stream = sd.OutputStream(samplerate=sr, channels=1, dtype="float32",
+                             blocksize=4096)
+    stream.start()
+
+    try:
+        for chunk in prebuffer_chunks:
+            stream.write(chunk.reshape(-1, 1))
+
+        if not synthesis_finished_early:
+            while True:
+                chunk = audio_queue.get()
+                if chunk is None:
+                    break
+                stream.write(chunk.reshape(-1, 1))
     finally:
         stream.stop()
         stream.close()
 
+    synth_thread.join()
+
+    total_time = time.time() - t0
     full_wav = np.concatenate(all_chunks)
     total_duration = len(full_wav) / sr
-    print(f"[LIVE] Done: {total_duration:.1f}s audio, {chunk_idx} chunks, "
-          f"{time.time() - t0:.1f}s total")
+
+    print(f"[TTS] Done: {total_duration:.1f}s audio, {len(all_chunks)} chunks, "
+          f"{total_time:.1f}s total (RTF={total_time / total_duration:.2f})")
 
     return full_wav, sr
 
 
 def save_audio(wav, sr, save_path=None):
-    """Save audio to file."""
     import soundfile as sf
-
     if not save_path:
         os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         save_path = str(DEFAULT_OUTPUT_DIR / f"cook_tts_{timestamp}.wav")
-
     os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
     sf.write(save_path, wav, sr)
     print(f"[TTS] Saved to {save_path}")
@@ -242,7 +209,7 @@ def main():
     os.environ["TQDM_DISABLE"] = "1"
 
     parser = argparse.ArgumentParser(
-        description="Synthesize Cook voice and play seamlessly")
+        description="Synthesize Cook voice with pre-buffered playback")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--text", type=str, help="Text to synthesize")
     group.add_argument("--text-file", type=str, help="Path to text file")
@@ -252,8 +219,8 @@ def main():
                         help="Max words for TTS (default: 500)")
     parser.add_argument("--timesteps", type=int, default=6,
                         help="Diffusion steps (default: 6, range: 4-30)")
-    parser.add_argument("--live", action="store_true",
-                        help="True real-time streaming (may stutter if RTF > 1)")
+    parser.add_argument("--prebuffer", type=int, default=15,
+                        help="Seconds of audio to buffer before playback (default: 15)")
     args = parser.parse_args()
 
     if args.text_file:
@@ -272,11 +239,8 @@ def main():
     download_model_if_needed()
     model = load_model()
 
-    if args.live:
-        wav, sr = synthesize_and_play_live(model, text, timesteps=args.timesteps)
-    else:
-        wav, sr = synthesize_with_progress(model, text, timesteps=args.timesteps)
-        play_seamless(wav, sr)
+    wav, sr = stream_with_prebuffer(
+        model, text, timesteps=args.timesteps, prebuffer_secs=args.prebuffer)
 
     save_audio(wav, sr, save_path=args.save)
     print("[STREAM] Complete.")
