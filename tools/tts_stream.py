@@ -2,9 +2,8 @@
 """
 Combined Step 2+3: Synthesize speech AND play simultaneously (streaming).
 
-Instead of waiting for full synthesis before playback, this script starts
-playing audio chunks as soon as they are generated. This dramatically
-reduces perceived latency — the user hears Cook's voice within seconds.
+Uses sounddevice to write audio chunks directly to the system audio output
+as they are generated — no temp files, no subprocess spawning, no gaps.
 
 Usage:
     python3 tts_stream.py --text-file /tmp/cook_response.txt
@@ -19,7 +18,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 import time
 from pathlib import Path
 
@@ -32,7 +30,7 @@ MODEL_ID = "openbmb/VoxCPM2"
 
 def check_dependencies():
     """Check and install required Python packages."""
-    required = ["voxcpm", "soundfile", "numpy"]
+    required = ["voxcpm", "soundfile", "numpy", "sounddevice"]
     missing = []
     for pkg in required:
         try:
@@ -117,9 +115,9 @@ def truncate_text(text, max_words):
 
 
 def stream_and_play(model, text, save_path=None, timesteps=6):
-    """Generate speech in streaming mode, playing each chunk as it arrives."""
+    """Generate speech in streaming mode, playing via sounddevice output stream."""
     import numpy as np
-    import soundfile as sf
+    import sounddevice as sd
 
     ref_audio = str(REFERENCE_AUDIO)
     if not os.path.exists(ref_audio):
@@ -133,61 +131,51 @@ def stream_and_play(model, text, save_path=None, timesteps=6):
 
     print(f"[STREAM] Starting streaming synthesis (timesteps={timesteps})...")
 
-    for chunk in model.generate_streaming(
-        text=text,
-        reference_wav_path=ref_audio,
-        cfg_value=2.0,
-        inference_timesteps=timesteps,
-    ):
-        chunk_idx += 1
-        chunk_duration = len(chunk) / sr
+    # Open a continuous audio output stream — no gaps between chunks
+    stream = sd.OutputStream(samplerate=sr, channels=1, dtype="float32")
+    stream.start()
 
-        if chunk_idx == 1:
-            first_chunk_time = time.time() - t0
-            print(f"[STREAM] First audio chunk in {first_chunk_time:.1f}s ({chunk_duration:.1f}s audio)")
+    try:
+        for chunk in model.generate_streaming(
+            text=text,
+            reference_wav_path=ref_audio,
+            cfg_value=2.0,
+            inference_timesteps=timesteps,
+        ):
+            chunk_idx += 1
+            chunk_duration = len(chunk) / sr
 
-        all_chunks.append(chunk)
+            if chunk_idx == 1:
+                first_chunk_time = time.time() - t0
+                print(f"[STREAM] First audio in {first_chunk_time:.1f}s "
+                      f"({chunk_duration:.1f}s of audio)")
 
-        # Write chunk to temp file and play it
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            tmp_path = tmp.name
-            sf.write(tmp_path, chunk, sr)
+            all_chunks.append(chunk)
 
-        try:
-            if sys.platform == "darwin":
-                subprocess.run(["afplay", tmp_path], check=False)
-            elif sys.platform == "linux":
-                for cmd in ["aplay", "paplay", "ffplay -nodisp -autoexit"]:
-                    try:
-                        subprocess.run(cmd.split() + [tmp_path], check=False)
-                        break
-                    except FileNotFoundError:
-                        continue
-        finally:
-            try:
-                os.unlink(tmp_path)
-            except OSError:
-                pass
+            # Write directly to audio output buffer — seamless, no gaps
+            audio_data = chunk.astype(np.float32).reshape(-1, 1)
+            stream.write(audio_data)
+
+    finally:
+        # Wait for remaining audio in buffer to finish playing
+        stream.stop()
+        stream.close()
 
     total_time = time.time() - t0
     full_wav = np.concatenate(all_chunks)
     total_duration = len(full_wav) / sr
 
-    print(f"[STREAM] Done: {total_duration:.1f}s audio, {chunk_idx} chunks, {total_time:.1f}s total")
+    print(f"[STREAM] Done: {total_duration:.1f}s audio, "
+          f"{chunk_idx} chunks, {total_time:.1f}s total")
 
     # Optionally save the complete audio
     if save_path:
+        import soundfile as sf
         os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
         sf.write(save_path, full_wav, sr)
         print(f"[STREAM] Saved to {save_path}")
 
     return total_duration
-
-
-def generate_save_path(save_arg):
-    if save_arg:
-        return save_arg
-    return None  # Don't save by default in streaming mode
 
 
 def main():
