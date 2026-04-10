@@ -162,11 +162,14 @@ def synthesize_with_progress(model, text, timesteps=6):
 
 def play_seamless(wav, sr):
     """Play audio in one pass — zero stuttering."""
+    import numpy as np
     import sounddevice as sd
 
+    wav = wav.astype(np.float32)
     duration = len(wav) / sr
-    print(f"[PLAY] Playing {duration:.1f}s audio...")
-    sd.play(wav, sr)
+    print(f"[PLAY] Playing {duration:.1f}s audio (sr={sr}, dtype={wav.dtype}, "
+          f"samples={len(wav)}, max={wav.max():.4f})...")
+    sd.play(wav, sr, blocksize=2048)
     sd.wait()
     print(f"[PLAY] Done.")
 
