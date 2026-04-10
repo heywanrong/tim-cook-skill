@@ -219,8 +219,8 @@ def main():
                         help="Max words for TTS (default: 500)")
     parser.add_argument("--timesteps", type=int, default=6,
                         help="Diffusion steps (default: 6, range: 4-30)")
-    parser.add_argument("--prebuffer", type=int, default=15,
-                        help="Seconds of audio to buffer before playback (default: 15)")
+    parser.add_argument("--prebuffer", type=int, default=30,
+                        help="Seconds of audio to buffer before playback (default: 30)")
     args = parser.parse_args()
 
     if args.text_file:
